@@ -2,17 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { 
   Wallet, TrendingUp, TrendingDown, PlusCircle, Trash2, 
   Search, Download, Share2, Eye, EyeOff, Bell, Target, 
-  Tag, RefreshCw, CheckCircle2, AlertCircle, Sparkles
+  Tag, RefreshCw, CheckCircle2, AlertCircle, Sparkles, CreditCard, Banknote
 } from 'lucide-react';
 
 export default function App() {
-  // State Keuangan & Saldo Awal
-  const [initialBalance, setInitialBalance] = useState(() => {
-    const saved = localStorage.getItem('cashflowly_initial_balance');
-    return saved ? Number(saved) : 1000000;
+  // State Saldo Online & Uang Cash
+  const [onlineBalance, setOnlineBalance] = useState(() => {
+    const saved = localStorage.getItem('cashflowly_online_balance');
+    return saved ? Number(saved) : 2500000;
   });
-  const [isEditingBalance, setIsEditingBalance] = useState(false);
-  const [tempBalance, setTempBalance] = useState(initialBalance);
+  const [cashBalance, setCashBalance] = useState(() => {
+    const saved = localStorage.getItem('cashflowly_cash_balance');
+    return saved ? Number(saved) : 500000;
+  });
+
+  const [isEditingOnline, setIsEditingOnline] = useState(false);
+  const [tempOnline, setTempOnline] = useState(onlineBalance);
+
+  const [isEditingCash, setIsEditingCash] = useState(false);
+  const [tempCash, setTempCash] = useState(cashBalance);
 
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem('cashflowly_transactions');
@@ -55,12 +63,13 @@ export default function App() {
 
   // Simpan ke LocalStorage
   useEffect(() => {
-    localStorage.setItem('cashflowly_initial_balance', initialBalance);
+    localStorage.setItem('cashflowly_online_balance', onlineBalance);
+    localStorage.setItem('cashflowly_cash_balance', cashBalance);
     localStorage.setItem('cashflowly_transactions', JSON.stringify(transactions));
     localStorage.setItem('cashflowly_categories', JSON.stringify(customCategories));
     localStorage.setItem('cashflowly_target', savingsTarget);
     localStorage.setItem('cashflowly_budget', monthlyBudget);
-  }, [initialBalance, transactions, customCategories, savingsTarget, monthlyBudget]);
+  }, [onlineBalance, cashBalance, transactions, customCategories, savingsTarget, monthlyBudget]);
 
   // Hitung Total Keuangan
   const totalIncome = transactions
@@ -71,7 +80,8 @@ export default function App() {
     .filter(t => t.type === 'expense')
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
-  const currentNetWorth = initialBalance + totalIncome - totalExpense;
+  const initialTotalBalance = onlineBalance + cashBalance;
+  const currentNetWorth = initialTotalBalance + totalIncome - totalExpense;
   const budgetPercentage = monthlyBudget > 0 ? Math.min((totalExpense / monthlyBudget) * 100, 100) : 0;
   const savingsPercentage = savingsTarget > 0 ? Math.min((currentNetWorth / savingsTarget) * 100, 100) : 0;
 
@@ -93,7 +103,6 @@ export default function App() {
     setTitle('');
     setAmount('');
 
-    // Tambah Notifikasi
     setNotifications([
       { id: Date.now(), text: `Berhasil mencatat ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'}: ${title}`, time: 'Baru saja' },
       ...notifications
@@ -159,7 +168,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Toggle Mode Privasi */}
             <button 
               onClick={() => setPrivacyMode(!privacyMode)}
               className="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition text-slate-300"
@@ -168,7 +176,6 @@ export default function App() {
               {privacyMode ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
 
-            {/* Tombol Notifikasi */}
             <div className="relative">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
@@ -201,56 +208,106 @@ export default function App() {
       {/* Konten Utama */}
       <main className="max-w-4xl mx-auto px-4 mt-6 space-y-6">
         
-        {/* Kartu Total Kekayaan & Edit Saldo Awal */}
+        {/* Kartu Total Kekayaan Utama */}
         <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-6 rounded-3xl shadow-xl shadow-blue-900/20 relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
           
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-blue-100 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" /> Total Kekayaan / Saldo Utama
-            </span>
-            <button 
-              onClick={() => { setIsEditingBalance(true); setTempBalance(initialBalance); }}
-              className="text-xs bg-white/20 hover:bg-white/30 backdrop-blur px-3 py-1.5 rounded-lg transition font-medium text-white"
-            >
-              ✏️ Edit Saldo Awal
-            </button>
+          <span className="text-sm font-medium text-blue-100 flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4" /> Total Kekayaan Keseluruhan
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-1 text-white">
+            {formatRupiah(currentNetWorth)}
+          </h2>
+
+          {/* Kartu Saldo Online & Uang Cash (Bisa Diedit Terpisah) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/15">
+            
+            {/* Saldo Online */}
+            <div className="bg-white/10 backdrop-blur p-4 rounded-2xl border border-white/10">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-blue-100 flex items-center gap-1.5 font-medium">
+                  <CreditCard className="w-4 h-4 text-blue-200" /> Saldo Online (Bank/E-Wallet)
+                </span>
+                <button 
+                  onClick={() => { setIsEditingOnline(true); setTempOnline(onlineBalance); }}
+                  className="text-[10px] bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-lg transition font-medium text-white"
+                >
+                  ✏️ Edit
+                </button>
+              </div>
+
+              {isEditingOnline ? (
+                <div className="flex gap-2 mt-2">
+                  <input 
+                    type="number" 
+                    value={tempOnline}
+                    onChange={(e) => setTempOnline(e.target.value)}
+                    className="px-2.5 py-1 rounded-xl text-slate-900 font-bold w-full text-xs focus:outline-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      const parsed = Number(tempOnline);
+                      setOnlineBalance(isNaN(parsed) ? 0 : parsed);
+                      setIsEditingOnline(false);
+                    }}
+                    className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-xl font-bold text-xs text-white transition"
+                  >
+                    Simpan
+                  </button>
+                </div>
+              ) : (
+                <p className="text-lg font-bold text-white mt-1">{formatRupiah(onlineBalance)}</p>
+              )}
+            </div>
+
+            {/* Uang Cash */}
+            <div className="bg-white/10 backdrop-blur p-4 rounded-2xl border border-white/10">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-blue-100 flex items-center gap-1.5 font-medium">
+                  <Banknote className="w-4 h-4 text-emerald-200" /> Uang Cash (Dompet Fisik)
+                </span>
+                <button 
+                  onClick={() => { setIsEditingCash(true); setTempCash(cashBalance); }}
+                  className="text-[10px] bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-lg transition font-medium text-white"
+                >
+                  ✏️ Edit
+                </button>
+              </div>
+
+              {isEditingCash ? (
+                <div className="flex gap-2 mt-2">
+                  <input 
+                    type="number" 
+                    value={tempCash}
+                    onChange={(e) => setTempCash(e.target.value)}
+                    className="px-2.5 py-1 rounded-xl text-slate-900 font-bold w-full text-xs focus:outline-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      const parsed = Number(tempCash);
+                      setCashBalance(isNaN(parsed) ? 0 : parsed);
+                      setIsEditingCash(false);
+                    }}
+                    className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-xl font-bold text-xs text-white transition"
+                  >
+                    Simpan
+                  </button>
+                </div>
+              ) : (
+                <p className="text-lg font-bold text-white mt-1">{formatRupiah(cashBalance)}</p>
+              )}
+            </div>
+
           </div>
 
-          {isEditingBalance ? (
-            <div className="flex gap-2 mt-3 bg-white/10 p-3 rounded-2xl backdrop-blur">
-              <input 
-                type="number" 
-                value={tempBalance}
-                onChange={(e) => setTempBalance(e.target.value)}
-                className="px-3 py-2 rounded-xl text-slate-900 font-bold w-full focus:outline-none"
-                placeholder="Masukkan saldo awal..."
-              />
-              <button 
-                onClick={() => {
-                  const parsed = Number(tempBalance);
-                  setInitialBalance(isNaN(parsed) ? 0 : parsed);
-                  setIsEditingBalance(false);
-                }}
-                className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl font-bold text-sm text-white transition shadow-lg"
-              >
-                Simpan
-              </button>
-            </div>
-          ) : (
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-1 text-white">
-              {formatRupiah(currentNetWorth)}
-            </h2>
-          )}
-
           {/* Ringkasan Masuk & Keluar */}
-          <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/15">
+          <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/15">
             <div className="flex items-center gap-3">
               <div className="bg-emerald-500/20 p-2.5 rounded-xl">
                 <TrendingUp className="w-5 h-5 text-emerald-300" />
               </div>
               <div>
-                <p className="text-xs text-blue-100">Pemasukan</p>
+                <p className="text-xs text-blue-100">Total Pemasukan</p>
                 <p className="text-sm sm:text-base font-bold text-emerald-300">{formatRupiah(totalIncome)}</p>
               </div>
             </div>
@@ -260,7 +317,7 @@ export default function App() {
                 <TrendingDown className="w-5 h-5 text-rose-300" />
               </div>
               <div>
-                <p className="text-xs text-blue-100">Pengeluaran</p>
+                <p className="text-xs text-blue-100">Total Pengeluaran</p>
                 <p className="text-sm sm:text-base font-bold text-rose-300">{formatRupiah(totalExpense)}</p>
               </div>
             </div>
