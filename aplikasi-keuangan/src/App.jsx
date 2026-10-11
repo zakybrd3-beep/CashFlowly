@@ -100,7 +100,7 @@ export default function App() {
     ]);
   };
 
-  // Hapus Transaksi (Dengan opsi info)
+  // Hapus Transaksi
   const handleDeleteTransaction = (id) => {
     setTransactions(transactions.filter(t => t.id !== id));
   };
@@ -228,7 +228,8 @@ export default function App() {
               />
               <button 
                 onClick={() => {
-                  setInitialBalance(Number(tempBalance));
+                  const parsed = Number(tempBalance);
+                  setInitialBalance(isNaN(parsed) ? 0 : parsed);
                   setIsEditingBalance(false);
                 }}
                 className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl font-bold text-sm text-white transition shadow-lg"
@@ -268,7 +269,6 @@ export default function App() {
 
         {/* Progress Bar Budget & Target Tabungan */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Budget Bulanan */}
           <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
@@ -288,7 +288,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Target Tabungan */}
           <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
@@ -428,7 +427,6 @@ export default function App() {
             <h3 className="text-base font-bold text-slate-200">Riwayat Transaksi</h3>
             
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              {/* Kolom Cari */}
               <div className="relative flex-1 sm:w-60">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input 
@@ -440,7 +438,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Filter Kategori */}
               <select 
                 value={selectedCategoryFilter}
                 onChange={(e) => setSelectedCategoryFilter(e.target.value)}
@@ -454,7 +451,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Daftar Transaksi */}
           <div className="space-y-3">
             {filteredTransactions.length === 0 ? (
               <p className="text-center text-slate-500 text-sm py-8">Belum ada transaksi yang ditemukan.</p>
