@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Wallet, TrendingUp, TrendingDown, PlusCircle, Trash2, 
   Search, Download, Share2, Eye, EyeOff, Bell, Target, 
-  Tag, RefreshCw, CheckCircle2, AlertCircle, Sparkles, CreditCard, Banknote
+  Tag, RefreshCw, CheckCircle2, AlertCircle, Sparkles, CreditCard, Banknote, Edit3
 } from 'lucide-react';
 
 export default function App() {
@@ -22,6 +22,21 @@ export default function App() {
   const [isEditingCash, setIsEditingCash] = useState(false);
   const [tempCash, setTempCash] = useState(cashBalance);
 
+  // State Target Tabungan & Budget dengan Fitur Edit
+  const [savingsTarget, setSavingsTarget] = useState(() => {
+    const saved = localStorage.getItem('cashflowly_target');
+    return saved ? Number(saved) : 5000000;
+  });
+  const [isEditingTarget, setIsEditingTarget] = useState(false);
+  const [tempTarget, setTempTarget] = useState(savingsTarget);
+
+  const [monthlyBudget, setMonthlyBudget] = useState(() => {
+    const saved = localStorage.getItem('cashflowly_budget');
+    return saved ? Number(saved) : 2000000;
+  });
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [tempBudget, setTempBudget] = useState(monthlyBudget);
+
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem('cashflowly_transactions');
     return saved ? JSON.parse(saved) : [
@@ -34,16 +49,6 @@ export default function App() {
   const [customCategories, setCustomCategories] = useState(() => {
     const saved = localStorage.getItem('cashflowly_categories');
     return saved ? JSON.parse(saved) : ['Gaji', 'Belanja', 'Transport', 'Makanan', 'Hiburan', 'Lainnya'];
-  });
-
-  const [savingsTarget, setSavingsTarget] = useState(() => {
-    const saved = localStorage.getItem('cashflowly_target');
-    return saved ? Number(saved) : 5000000;
-  });
-
-  const [monthlyBudget, setMonthlyBudget] = useState(() => {
-    const saved = localStorage.getItem('cashflowly_budget');
-    return saved ? Number(saved) : 2000000;
   });
 
   const [privacyMode, setPrivacyMode] = useState(false);
@@ -219,7 +224,7 @@ export default function App() {
             {formatRupiah(currentNetWorth)}
           </h2>
 
-          {/* Kartu Saldo Online & Uang Cash (Bisa Diedit Terpisah) */}
+          {/* Kartu Saldo Online & Uang Cash */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/15">
             
             {/* Saldo Online */}
@@ -324,15 +329,47 @@ export default function App() {
           </div>
         </div>
 
-        {/* Progress Bar Budget & Target Tabungan */}
+        {/* Progress Bar Budget & Target Tabungan (Dilengkapi Tombol Edit) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Batas Anggaran Bulanan */}
           <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-400" /> Batas Budget Bulanan
               </span>
-              <span className="text-xs text-slate-400">{Math.round(budgetPercentage)}%</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">{Math.round(budgetPercentage)}%</span>
+                <button 
+                  onClick={() => { setIsEditingBudget(true); setTempBudget(monthlyBudget); }}
+                  className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-lg transition border border-slate-700"
+                >
+                  ✏️ Edit
+                </button>
+              </div>
             </div>
+
+            {isEditingBudget ? (
+              <div className="flex gap-2 my-2">
+                <input 
+                  type="number" 
+                  value={tempBudget}
+                  onChange={(e) => setTempBudget(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl text-slate-900 font-bold w-full text-xs focus:outline-none bg-slate-200"
+                />
+                <button 
+                  onClick={() => {
+                    const parsed = Number(tempBudget);
+                    setMonthlyBudget(isNaN(parsed) ? 0 : parsed);
+                    setIsEditingBudget(false);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-xl font-bold text-xs text-white transition"
+                >
+                  Simpan
+                </button>
+              </div>
+            ) : null}
+
             <div className="w-full bg-slate-800 h-3 rounded-full overflow-hidden mb-3">
               <div 
                 className={`h-full transition-all duration-500 ${budgetPercentage > 85 ? 'bg-rose-500' : 'bg-blue-500'}`} 
@@ -345,13 +382,44 @@ export default function App() {
             </div>
           </div>
 
+          {/* Target Tabungan Impian */}
           <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
                 <Target className="w-4 h-4 text-emerald-400" /> Target Tabungan Impian
               </span>
-              <span className="text-xs text-slate-400">{Math.round(savingsPercentage)}%</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">{Math.round(savingsPercentage)}%</span>
+                <button 
+                  onClick={() => { setIsEditingTarget(true); setTempTarget(savingsTarget); }}
+                  className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-lg transition border border-slate-700"
+                >
+                  ✏️ Edit
+                </button>
+              </div>
             </div>
+
+            {isEditingTarget ? (
+              <div className="flex gap-2 my-2">
+                <input 
+                  type="number" 
+                  value={tempTarget}
+                  onChange={(e) => setTempTarget(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl text-slate-900 font-bold w-full text-xs focus:outline-none bg-slate-200"
+                />
+                <button 
+                  onClick={() => {
+                    const parsed = Number(tempTarget);
+                    setSavingsTarget(isNaN(parsed) ? 0 : parsed);
+                    setIsEditingTarget(false);
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-xl font-bold text-xs text-white transition"
+                >
+                  Simpan
+                </button>
+              </div>
+            ) : null}
+
             <div className="w-full bg-slate-800 h-3 rounded-full overflow-hidden mb-3">
               <div 
                 className="h-full bg-emerald-500 transition-all duration-500" 
@@ -363,6 +431,7 @@ export default function App() {
               <span>Target: {formatRupiah(savingsTarget)}</span>
             </div>
           </div>
+
         </div>
 
         {/* Form Tambah Transaksi & Kategori */}
