@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Wallet, TrendingUp, TrendingDown, PlusCircle, Trash2, 
   Search, Download, Share2, Eye, EyeOff, Bell, Target, 
-  Tag, RefreshCw, CheckCircle2, AlertCircle, Sparkles, CreditCard, Banknote, Edit3
+  Tag, RefreshCw, CheckCircle2, AlertCircle, Sparkles, CreditCard, Banknote
 } from 'lucide-react';
 
 export default function App() {
@@ -22,7 +22,7 @@ export default function App() {
   const [isEditingCash, setIsEditingCash] = useState(false);
   const [tempCash, setTempCash] = useState(cashBalance);
 
-  // State Target Tabungan & Budget dengan Fitur Edit
+  // State Target Tabungan & Budget
   const [savingsTarget, setSavingsTarget] = useState(() => {
     const saved = localStorage.getItem('cashflowly_target');
     return saved ? Number(saved) : 5000000;
@@ -156,7 +156,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12 selection:bg-blue-500 selection:text-white">
       {/* Header & Navigasi */}
       <header className="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -329,7 +329,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Progress Bar Budget & Target Tabungan (Dilengkapi Tombol Edit) */}
+        {/* Progress Bar Budget & Target Tabungan */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* Batas Anggaran Bulanan */}
