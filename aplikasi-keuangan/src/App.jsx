@@ -6,7 +6,6 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // State Saldo Online & Uang Cash
   const [onlineBalance, setOnlineBalance] = useState(() => {
     const saved = localStorage.getItem('cashflowly_online_balance');
     return saved ? Number(saved) : 2500000;
@@ -22,7 +21,6 @@ export default function App() {
   const [isEditingCash, setIsEditingCash] = useState(false);
   const [tempCash, setTempCash] = useState(cashBalance);
 
-  // State Target Tabungan & Budget
   const [savingsTarget, setSavingsTarget] = useState(() => {
     const saved = localStorage.getItem('cashflowly_target');
     return saved ? Number(saved) : 5000000;
@@ -59,14 +57,12 @@ export default function App() {
   ]);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // Form Input Transaksi Baru
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('Makanan');
   const [newCategoryName, setNewCategoryName] = useState('');
 
-  // Simpan ke LocalStorage
   useEffect(() => {
     localStorage.setItem('cashflowly_online_balance', onlineBalance);
     localStorage.setItem('cashflowly_cash_balance', cashBalance);
@@ -76,7 +72,6 @@ export default function App() {
     localStorage.setItem('cashflowly_budget', monthlyBudget);
   }, [onlineBalance, cashBalance, transactions, customCategories, savingsTarget, monthlyBudget]);
 
-  // Hitung Total Keuangan
   const totalIncome = transactions
     .filter(t => t.type === 'income')
     .reduce((acc, t) => acc + Number(t.amount), 0);
@@ -90,7 +85,6 @@ export default function App() {
   const budgetPercentage = monthlyBudget > 0 ? Math.min((totalExpense / monthlyBudget) * 100, 100) : 0;
   const savingsPercentage = savingsTarget > 0 ? Math.min((currentNetWorth / savingsTarget) * 100, 100) : 0;
 
-  // Tambah Transaksi
   const handleAddTransaction = (e) => {
     e.preventDefault();
     if (!title || !amount) return;
@@ -114,12 +108,10 @@ export default function App() {
     ]);
   };
 
-  // Hapus Transaksi
   const handleDeleteTransaction = (id) => {
     setTransactions(transactions.filter(t => t.id !== id));
   };
 
-  // Tambah Kategori Kustom
   const handleAddCategory = (e) => {
     e.preventDefault();
     if (newCategoryName && !customCategories.includes(newCategoryName)) {
@@ -129,7 +121,6 @@ export default function App() {
     }
   };
 
-  // Ekspor CSV
   const exportToCSV = () => {
     const headers = "ID,Judul,Jumlah,Tipe,Kategori,Tanggal\n";
     const rows = transactions.map(t => `${t.id},"${t.title}",${t.amount},${t.type},${t.category},${t.date}`).join("\n");
@@ -143,7 +134,6 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // Filter Transaksi
   const filteredTransactions = transactions.filter(t => {
     const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase()) || t.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategoryFilter === 'All' || t.category === selectedCategoryFilter;
@@ -156,8 +146,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12 selection:bg-blue-500 selection:text-white">
-      {/* Header & Navigasi */}
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12">
       <header className="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -210,10 +199,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Konten Utama */}
       <main className="max-w-4xl mx-auto px-4 mt-6 space-y-6">
-        
-        {/* Kartu Total Kekayaan Utama */}
         <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-6 rounded-3xl shadow-xl shadow-blue-900/20 relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
           
@@ -224,10 +210,7 @@ export default function App() {
             {formatRupiah(currentNetWorth)}
           </h2>
 
-          {/* Kartu Saldo Online & Uang Cash */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/15">
-            
-            {/* Saldo Online */}
             <div className="bg-white/10 backdrop-blur p-4 rounded-2xl border border-white/10">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-blue-100 flex items-center gap-1.5 font-medium">
@@ -265,7 +248,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Uang Cash */}
             <div className="bg-white/10 backdrop-blur p-4 rounded-2xl border border-white/10">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-blue-100 flex items-center gap-1.5 font-medium">
@@ -302,10 +284,8 @@ export default function App() {
                 <p className="text-lg font-bold text-white mt-1">{formatRupiah(cashBalance)}</p>
               )}
             </div>
-
           </div>
 
-          {/* Ringkasan Masuk & Keluar */}
           <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/15">
             <div className="flex items-center gap-3">
               <div className="bg-emerald-500/20 p-2.5 rounded-xl">
@@ -329,10 +309,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Progress Bar Budget & Target Tabungan */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
-          {/* Batas Anggaran Bulanan */}
           <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
@@ -382,7 +359,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Target Tabungan Impian */}
           <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-slate-300 flex items-center gap-2">
@@ -431,10 +407,8 @@ export default function App() {
               <span>Target: {formatRupiah(savingsTarget)}</span>
             </div>
           </div>
-
         </div>
 
-        {/* Form Tambah Transaksi & Kategori */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 bg-slate-900/90 border border-slate-800 p-6 rounded-3xl shadow-lg">
             <h3 className="text-base font-bold text-slate-200 mb-4 flex items-center gap-2">
@@ -501,7 +475,6 @@ export default function App() {
             </form>
           </div>
 
-          {/* Pengaturan Kategori & Ekspor */}
           <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-3xl shadow-lg flex flex-col justify-between space-y-4">
             <div>
               <h3 className="text-base font-bold text-slate-200 mb-3 flex items-center gap-2">
@@ -547,7 +520,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Riwayat Transaksi & Pencarian */}
         <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-3xl shadow-lg">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
             <h3 className="text-base font-bold text-slate-200">Riwayat Transaksi</h3>
